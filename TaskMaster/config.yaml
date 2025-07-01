@@ -1,0 +1,60 @@
+programs:
+      prog:
+            cmd: "python3 test.py"
+            numprocs: 1
+            umask: 022
+            workingdir: "./test"
+            autostart: True
+            autorestart: unexpected
+            exitcodes: 
+            - 0
+            - 1
+            - 2
+            startretries: 3
+            starttime: 5
+            stopsignal: TERM
+            stoptime: 2
+            stdout: ./test/test.stdout
+            stderr: ./test/test.stderr
+            env:
+                        STARTED_BY: taskmaster
+                        ANSWER: "42"
+      nginx:
+            cmd: "/home/sriyani/apps/nginx/sbin/nginx -c /home/sriyani/apps/nginx/conf/nginx.conf -g 'daemon off';"
+
+            numprocs: 1
+            umask: 022
+            workingdir: /tmp
+            autostart: True
+            autorestart: unexpected
+            exitcodes:
+            - 0
+            - 1
+            - 2
+            startretries: 3
+            starttime: 5
+            stopsignal: TERM
+            stoptime: 10
+            stdout: /tmp/nginx.stdout
+            stderr: /tmp/nginx.stderr
+            env:
+                  STARTED_BY: taskmaster
+                  ANSWER: 42
+
+      # failtest:
+      #       cmd: "python3 test_fail.py"
+      #       numprocs: 1
+      #       autostart: True
+      #       startretries: 3
+      #       starttime: 5
+      #       exitcodes: [0]
+      #       workingdir: "./test"
+      #       stderr: ./test/fail.stderr
+      #       stdout: ./test/fail.stdout
+      # stalltest:
+      #       cmd: "python3 test_stop.py"
+      #       numprocs: 1
+      #       autostart: False
+      #       stoptime: 2
+      #       stopsignal: TERM
+      #       workingdir: "./test"
