@@ -1,14 +1,15 @@
-NAME =  MattDeamon
+NAME =  MattDaemon
 
 CPP = c++
 
 CPPFLAGS = #-Wall -Werror -Wextra
 
 SRC = main.cpp\
-		MattDeamon.cpp\
-		utils.cpp
+		MattDaemon.cpp\
+		utils.cpp\
+		Tintin_reporter.cpp
 
-HEADERS = MattDeamon.hpp
+HEADERS = MattDaemon.hpp
 			
 
 OBJ = $(SRC:.cpp=.o)
