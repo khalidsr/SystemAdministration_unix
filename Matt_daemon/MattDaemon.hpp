@@ -1,40 +1,48 @@
-#ifndef MATT_DEAMON_HPP
-#define MATT_DEAMON_HPP
-
-#include <iostream>
-#include <unistd.h>
+#ifndef MATT_DAEMON_HPP
+#define MATT_DAEMON_HPP
+#include "Tintin_reporter.hpp"
+#include <set>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <fstream>
+#include <fcntl.h>
+#include <unistd.h>
 #include <csignal>
+#include <cstdlib>
+#include <iostream>
+#include <fstream>
 #include <ctime>
-#include <iomanip> 
+#include <iomanip>
+#include <sys/select.h>
+#include <sys/wait.h>
+#include <cstring>
+#include <algorithm>
+#include <sys/stat.h>
 
-class MattDaemon
-{
-    private:
-
-    public:
-    MattDaemon();
-    MattDaemon(const MattDaemon &other);
-    MattDaemon& operator=(const MattDaemon &other);
-    ~MattDaemon();
-};
-
-class Tintin_reporter
-{
+class MattDaemon {
 private:
-    std::ofstream logFile;
+    static MattDaemon*   instance;
+    std::set<pid_t>      clients;
+    Tintin_reporter      logger;
+    int                  signalPipe[2];
+    int                  shutdownPipe[2];
+    int                  lock_fd;
+    int                  serverSocket;
+
+    MattDaemon();
+    MattDaemon(const MattDaemon& other);
+    MattDaemon& operator=(const MattDaemon& other);
+
+    static void signal_handler(int signum);
+    void        handle_signal(int signum);
+    int         create_lockfile();
+    int         listeningPort();
+    void        daemonize();
+
 public:
-    Tintin_reporter();
-    Tintin_reporter(const Tintin_reporter &other);
-    Tintin_reporter& operator=(const Tintin_reporter &other);
-    ~Tintin_reporter();
-    void log(const std::string &msg, const std::string &type_msg);
+    ~MattDaemon();
+    static MattDaemon* getInstance();
+    int run(int ac, char **av, char **env);
 };
 
-
-
-
-# endif
+#endif
