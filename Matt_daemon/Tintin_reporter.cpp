@@ -2,10 +2,11 @@
 
 Tintin_reporter::Tintin_reporter() 
 {
-    // system("mkdir -p /var/log/matt_daemon");
+    system("mkdir -p /var/log/matt_daemon");
     
-    logFile.open("matt_daemon.log", std::ios::app);
-    if (!logFile) {
+    logFile.open("/var/log/matt_daemon/matt_daemon.log", std::ios::app);
+    if (!logFile) 
+    {
         std::cerr << "Failed to open log file.\n";
         exit(EXIT_FAILURE);
     }
@@ -27,9 +28,14 @@ void Tintin_reporter::log(const std::string &msg, const std::string &type_msg)
             
 }
 
-Tintin_reporter::~Tintin_reporter() {
-    if (logFile.is_open()) {
-        logFile << "Logger shutting down." << std::endl;
+Tintin_reporter::~Tintin_reporter() 
+{
+    std::time_t now = std::time(nullptr);
+    std::tm *lt = std::localtime(&now);
+    if (logFile.is_open())
+     {
+        logFile << "[" << std::put_time(lt, "%d/%m/%Y-%H:%M:%S") << "] "
+            << "[ " << "Info" << " ] - Matt_daemon: "  << "Quitting." << std::endl;
         logFile.close();
     }
 }

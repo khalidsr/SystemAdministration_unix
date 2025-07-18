@@ -19,30 +19,32 @@
 #include <algorithm>
 #include <sys/stat.h>
 
-class MattDaemon {
-private:
-    static MattDaemon*   instance;
-    std::set<pid_t>      clients;
-    Tintin_reporter      logger;
-    int                  signalPipe[2];
-    int                  shutdownPipe[2];
-    int                  lock_fd;
-    int                  serverSocket;
+class MattDaemon 
+{
+    private:
+        static MattDaemon*   instance;
+        std::set<pid_t>      clients;
+        Tintin_reporter      logger;
+        int                  signalPipe[2];
+        int                  shutdownPipe[2];
+        int                  lock_fd;
+        int                  serverSocket;
 
-    MattDaemon();
-    MattDaemon(const MattDaemon& other);
-    MattDaemon& operator=(const MattDaemon& other);
+        MattDaemon();
+        MattDaemon(const MattDaemon& other);
+        MattDaemon& operator=(const MattDaemon& other);
+        int create_server_socket(); 
 
-    static void signal_handler(int signum);
-    void        handle_signal(int signum);
-    int         create_lockfile();
-    int         listeningPort();
-    void        daemonize();
+        static void signal_handler(int signum);
+        void        handle_signal(int signum);
+        int         create_lockfile();
+        int         listeningPort();
+        void        daemonize();
 
-public:
-    ~MattDaemon();
-    static MattDaemon* getInstance();
-    int run(int ac, char **av, char **env);
+    public:
+        ~MattDaemon();
+        static MattDaemon* getInstance();
+        int run();
 };
 
 #endif
