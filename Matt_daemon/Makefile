@@ -2,7 +2,7 @@ NAME =  MattDaemon
 
 CPP = c++
 
-CPPFLAGS = #-Wall -Werror -Wextra
+CPPFLAGS = -Wall -Werror -Wextra
 
 SRC = main.cpp\
 		MattDaemon.cpp\
