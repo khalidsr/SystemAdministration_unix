@@ -151,7 +151,7 @@ install_with_apt() {
     fi
 }
 
-# Install from source
+# Install from source with case-insensitive directory handling
 install_from_source() {
     local pkg=$1
     local version=$2
@@ -163,14 +163,24 @@ install_from_source() {
     cd "$build_dir"
     
     echo "    Downloading from $url"
-    if ! wget -q "${url}/${pkg}-${version}.tar.gz"; then
-        echo "    [ERROR] Download failed: ${pkg}-${version}"
+    local tarball="${pkg}-${version}.tar.gz"
+    if ! wget -q "${url}/${tarball}"; then
+        echo "    [ERROR] Download failed: ${tarball}"
         return
     fi
     
     echo "    Extracting source"
-    tar -xzf "${pkg}-${version}.tar.gz"
-    cd "${pkg}-${version}"
+    tar -xzf "${tarball}"
+    
+    # Case-insensitive directory search
+    local extracted_dir=$(find . -maxdepth 1 -type d -iname "${pkg}-*" | head -1)
+    if [ -z "$extracted_dir" ]; then
+        echo "    [ERROR] Could not find extraction directory for ${tarball}"
+        return
+    fi
+    
+    echo "    Entering directory: ${extracted_dir}"
+    cd "${extracted_dir}"
     
     echo "    Configuring..."
     ./configure --prefix=/usr/local
@@ -194,34 +204,34 @@ main() {
         exit 1
     fi
     
-    # Create package list
+    # Create package list with corrected case
     declare -a packages=(
-        "Acl 2.2.52 http://download.savannah.gnu.org/releases/acl"
-        "Attr 2.4.47 http://download.savannah.gnu.org/releases/attr"
-        "Autoconf 2.69 http://ftp.gnu.org/gnu/autoconf"
-        "Automake 1.15 http://ftp.gnu.org/gnu/automake"
-        "Bash 4.3.30 http://ftp.gnu.org/gnu/bash"
-        "Bc 1.06.95 http://ftp.gnu.org/gnu/bc"
-        "Bison 3.0.4 http://ftp.gnu.org/gnu/bison"
-        "Bzip2 1.0.6 http://www.bzip.org"
-        "Check 0.10.0 https://github.com/libcheck/check/releases/download/0.10.0"
-        "Diffutils 3.3 http://ftp.gnu.org/gnu/diffutils"
-        "Expect 5.45 http://sourceforge.net/projects/expect/files/Expect"
-        "File 5.24 https://astron.com/pub/file"
-        "Findutils 4.4.2 http://ftp.gnu.org/gnu/findutils"
-        "Flex 2.5.39 https://github.com/westes/flex/releases/download/v2.5.39"
-        "Gawk 4.1.3 http://ftp.gnu.org/gnu/gawk"
-        "GDBM 1.11 http://ftp.gnu.org/gnu/gdbm"
-        "Gettext 0.19.5.1 http://ftp.gnu.org/gnu/gettext"
-        "Gperf 3.0.4 http://ftp.gnu.org/gnu/gperf"
-        "Groff 1.22.3 http://ftp.gnu.org/gnu/groff"
-        "Intltool 0.51.0 https://launchpad.net/intltool/trunk/0.51.0/+download"
-        "Libpipeline 1.4.1 http://download.savannah.gnu.org/releases/libpipeline"
-        "Libtool 2.4.6 http://ftpmirror.gnu.org/libtool"
-        "M4 1.4.17 http://ftp.gnu.org/gnu/m4"
-        "Man-DB 2.7.2 http://download.savannah.gnu.org/releases/man-db"
-        "MPC 1.0.3 http://www.multiprecision.org/downloads"
-        "Tcl 8.6.4 https://prdownloads.sourceforge.net/tcl"
+        "acl 2.2.52 http://download.savannah.gnu.org/releases/acl"
+        "attr 2.4.47 http://download.savannah.gnu.org/releases/attr"
+        "autoconf 2.69 http://ftp.gnu.org/gnu/autoconf"
+        "automake 1.15 http://ftp.gnu.org/gnu/automake"
+        "bash 4.3.30 http://ftp.gnu.org/gnu/bash"
+        "bc 1.06.95 http://ftp.gnu.org/gnu/bc"
+        "bison 3.0.4 http://ftp.gnu.org/gnu/bison"
+        "bzip2 1.0.6 http://www.bzip.org"
+        "check 0.10.0 https://github.com/libcheck/check/releases/download/0.10.0"
+        "diffutils 3.3 http://ftp.gnu.org/gnu/diffutils"
+        "expect 5.45 http://sourceforge.net/projects/expect/files/Expect"
+        "file 5.24 https://astron.com/pub/file"
+        "findutils 4.4.2 http://ftp.gnu.org/gnu/findutils"
+        "flex 2.5.39 https://github.com/westes/flex/releases/download/v2.5.39"
+        "gawk 4.1.3 http://ftp.gnu.org/gnu/gawk"
+        "gdbm 1.11 http://ftp.gnu.org/gnu/gdbm"
+        "gettext 0.19.5.1 http://ftp.gnu.org/gnu/gettext"
+        "gperf 3.0.4 http://ftp.gnu.org/gnu/gperf"
+        "groff 1.22.3 http://ftp.gnu.org/gnu/groff"
+        "intltool 0.51.0 https://launchpad.net/intltool/trunk/0.51.0/+download"
+        "libpipeline 1.4.1 http://download.savannah.gnu.org/releases/libpipeline"
+        "libtool 2.4.6 http://ftpmirror.gnu.org/libtool"
+        "m4 1.4.17 http://ftp.gnu.org/gnu/m4"
+        "man-db 2.7.2 http://download.savannah.gnu.org/releases/man-db"
+        "mpc 1.0.3 http://www.multiprecision.org/downloads"
+        "tcl 8.6.4 https://prdownloads.sourceforge.net/tcl"
     )
     
     # Update package lists with lock handling
@@ -249,14 +259,8 @@ main() {
         read -r pkg version url <<< "$pkg_info"
         echo "Processing $pkg ($version)"
         
-        case $pkg in
-            Acl|Attr|Automake|Tcl|Man-DB|Intltool|Libpipeline|Expect|Check)
-                install_from_source "$pkg" "$version" "$url"
-                ;;
-            *)
-                install_with_apt "$pkg" "$version"
-                ;;
-        esac
+        # Use lowercase for all source installations
+        install_from_source "$pkg" "$version" "$url"
     done
     
     echo "Installation completed. Note: Some critical packages were skipped."
