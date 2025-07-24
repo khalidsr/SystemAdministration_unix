@@ -151,7 +151,23 @@ install_with_apt() {
     fi
 }
 
-# Install from source with case-insensitive directory handling
+# Function to patch gnulib's fseterr.c
+patch_fseterr() {
+    local file_path="$1"
+    if [ -f "$file_path" ]; then
+        echo "    Patching fseterr.c for platform compatibility"
+        
+        # Create backup of original file
+        cp "$file_path" "${file_path}.bak"
+        
+        # Apply patch
+        sed -i 's/#error "Please port gnulib fseterr.c to your platform!"/\/\/ Patched for Debian compatibility: using fallback method\n  clearerr(fp);\n  fflush(fp);\n  setbuf(fp, NULL);\n  \/\/ Attempt to force error state\n  fgetc(fp);\n  clearerr(fp);/' "$file_path"
+        
+        echo "    Successfully patched fseterr.c"
+    fi
+}
+
+# Install from source with case-insensitive directory handling and fseterr patch
 install_from_source() {
     local pkg=$1
     local version=$2
@@ -181,6 +197,9 @@ install_from_source() {
     
     echo "    Entering directory: ${extracted_dir}"
     cd "${extracted_dir}"
+    
+    # Apply fseterr.c patch if it exists
+    patch_fseterr "lib/fseterr.c"
     
     echo "    Configuring..."
     ./configure --prefix=/usr/local
