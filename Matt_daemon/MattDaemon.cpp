@@ -118,7 +118,7 @@ int MattDaemon::listeningPort()
     sockaddr_in serverAddress;
     memset(&serverAddress, 0, sizeof(serverAddress));
     serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(4242);
+    serverAddress.sin_port = htons(4243);
     serverAddress.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) 
@@ -149,7 +149,8 @@ int MattDaemon::listeningPort()
         int maxfd = std::max(serverSocket, std::max(shutdownPipe[0], signalPipe[0]));
 
         int ready = select(maxfd + 1, &read_fds, nullptr, nullptr, nullptr);
-        if (ready < 0) continue;
+        if (ready < 0) 
+            continue;
 
         if (FD_ISSET(signalPipe[0], &read_fds)) 
         {
@@ -223,27 +224,75 @@ int MattDaemon::listeningPort()
                 close(shutdownPipe[0]);
                 logger.log("Client connected.", "INFO");
 
+                // Check if it's a graphical client (one-time command)
+                fd_set test_fds;
+                FD_ZERO(&test_fds);
+                FD_SET(clientSocket, &test_fds);
+                struct timeval tv;
+                tv.tv_sec = 1;  // 1 second timeout
+                tv.tv_usec = 0;
+                
+                int ready = select(clientSocket + 1, &test_fds, NULL, NULL, &tv);
+                if (ready > 0 && FD_ISSET(clientSocket, &test_fds)) {
+                    // Data already available - treat as graphical client
+                    handleGraphicalClient(clientSocket);
+                    exit(0);
+                }
+                
+                // // Otherwise, proceed with shell client
+                if (!handleClientConnection(clientSocket)) 
+                {
+                    exit(1);
+                }
+                logger.log("Remote shell session started", "INFO");
+
                 char buffer[1024];
                 ssize_t bytes_read;
-                while ((bytes_read = read(clientSocket, buffer, sizeof(buffer)-1)))
+                
+                // Send welcome message
+                std::string welcome = "MattDaemon Remote Shell - Type 'help' for commands\n";
+                write(clientSocket, welcome.c_str(), welcome.size());
+                
+                while (true) 
                 {
+                    // Send prompt
+                    write(clientSocket, "$ ", 2);
+                    
+                    // Read command
+                    bytes_read = read(clientSocket, buffer, sizeof(buffer)-1);
                     if (bytes_read <= 0) break;
+                    
                     buffer[bytes_read] = '\0';
-                    std::string msg = buffer;
-                    msg.erase(msg.find_last_not_of("\r\n") + 1);
-                    logger.log("User input: " + msg, "LOG");
+                    std::string command = buffer;
+                    command.erase(command.find_last_not_of("\r\n") + 1);
+                    
+                    logger.log("Command: " + command, "LOG");
 
-                    if (msg == "quit") 
+                    if (command == "quit" || command == "exit") 
                     {
                         write(shutdownPipe[1], "Q", 1);
                         break;
                     }
-                    std::string response = "Server received: " + msg + "\n";
-                    write(clientSocket, response.c_str(), response.size());
+                    
+                    if (command == "help") {
+                        std::string help = "Available commands:\n"
+                                        "  help    - Show this help\n"
+                                        "  exit    - Exit shell\n"
+                                        "  quit    - Quit server\n"
+                                        "  [any system command from allow list]\n";
+                        write(clientSocket, help.c_str(), help.size());
+                        continue;
+                    }
+                    
+                    // Execute command using remote shell
+                    std::string output = RemoteShell::execute(command);
+                    write(clientSocket, output.c_str(), output.size());
                 }
+                
+                logger.log("Remote shell session ended", "INFO");
                 close(clientSocket);
                 exit(0);
-            } 
+            }  
             else 
             { 
                 clients.insert(pid);
@@ -256,6 +305,26 @@ int MattDaemon::listeningPort()
 
 int MattDaemon::run() 
 {
+    std::ifstream config("matt_daemon.cfg");
+    std::string token;
+
+    if (config.is_open()) 
+    {
+        std::getline(config, token);
+        // Authenticator::setToken(token);
+        Authenticator::loadUsers();
+
+        std::string defaultUser = "admin";
+        std::string defaultEmail = Authenticator::getEmail(defaultUser);
+        EmailSender::configure("jamel@mechanicspedia.com");
+
+        logger.log("Loaded authentication token and email for admin", "INFO");
+    }
+
+    else 
+    {
+        logger.log("Using default authentication token", "WARNING");
+    }
 
     logger.log("Started.", "INFO");
 
@@ -298,3 +367,120 @@ int MattDaemon::run()
         return EXIT_FAILURE; 
     return EXIT_SUCCESS;
 }
+
+void MattDaemon::handleGraphicalClient(int clientSocket) 
+{
+    char buffer[1024];
+    ssize_t bytes_read = read(clientSocket, buffer, sizeof(buffer) - 1);
+    
+    if (bytes_read <= 0) 
+    {
+        logger.log("Failed to read from graphical client", "WARNING");
+        close(clientSocket);
+        return;
+    }
+    
+    buffer[bytes_read] = '\0';
+    std::string message(buffer);
+    
+    size_t first_colon = message.find(':');
+    size_t second_colon = message.find(':', first_colon + 1);
+    
+    if (first_colon == std::string::npos || second_colon == std::string::npos) 
+    {
+        logger.log("Invalid message format from graphical client", "WARNING");
+        const char* response = "ERROR: Invalid message format. Use username:password:command";
+        write(clientSocket, response, strlen(response));
+        close(clientSocket);
+        return;
+    }
+    
+    std::string username = message.substr(0, first_colon);
+    std::string password = message.substr(first_colon + 1, second_colon - first_colon - 1);
+    std::string command = message.substr(second_colon + 1);
+    
+    logger.log("Received from GUI client - User: " + username + ", Command: " + command, "INFO");
+    if (!Authenticator::authenticate(username, password))
+    {
+ 
+        logger.log("Authentication failed for user: " + username, "WARNING");
+        const char* response = "AUTH_FAIL: Invalid credentials";
+        write(clientSocket, response, strlen(response));
+        close(clientSocket);
+        return;
+    }
+    
+    std::string output = RemoteShell::execute(command);
+    if (output.empty()) 
+    {
+        output = "Command produced no output";
+    }
+    
+    write(clientSocket, output.c_str(), output.size());
+    logger.log("Sent response to GUI client", "INFO");
+    close(clientSocket);
+}
+
+bool MattDaemon::handleClientConnection(int clientSocket) 
+{
+    const char* prompt = "AUTH: Enter username:password\n";
+    write(clientSocket, prompt, strlen(prompt));
+
+    char buffer[1024];
+    ssize_t bytes_read = read(clientSocket, buffer, sizeof(buffer) - 1);
+    if (bytes_read <= 0) {
+        logger.log("No auth received from CLI client", "WARNING");
+        return false;
+    }
+
+    buffer[bytes_read] = '\0';
+    std::string message(buffer);
+
+    size_t colon = message.find(':');
+    if (colon == std::string::npos) 
+    {
+        const char* fail = "AUTH_FAIL: Expected username:password\n";
+        write(clientSocket, fail, strlen(fail));
+        return false;
+    }
+
+    std::string username = message.substr(0, colon);
+    std::string password = message.substr(colon + 1);
+    password.erase(password.find_last_not_of("\r\n") + 1);
+
+    if (!Authenticator::authenticate(username, password)) {
+        logger.log("Auth failed for CLI user: " + username, "WARNING");
+        const char* fail = "AUTH_FAIL: Invalid credentials\n";
+        write(clientSocket, fail, strlen(fail));
+        return false;
+    }
+
+    logger.log("CLI client authenticated as: " + username, "INFO");
+    const char* welcome = "AUTH_OK\nMattDaemon Shell - type 'help' or 'exit'\n";
+    write(clientSocket, welcome, strlen(welcome));
+
+    while (true) {
+        write(clientSocket, "$ ", 2);
+        bytes_read = read(clientSocket, buffer, sizeof(buffer) - 1);
+        if (bytes_read <= 0) break;
+
+        buffer[bytes_read] = '\0';
+        std::string cmd(buffer);
+        cmd.erase(cmd.find_last_not_of("\r\n") + 1);
+
+        if (cmd == "exit" || cmd == "quit") break;
+        if (cmd == "help") {
+            std::string help = "Available commands:\nhelp - show this\nexit - close session\n";
+            write(clientSocket, help.c_str(), help.size());
+            continue;
+        }
+
+        std::string output = RemoteShell::execute(cmd);
+        if (output.empty()) output = "(no output)\n";
+        write(clientSocket, output.c_str(), output.size());
+    }
+
+    logger.log("CLI session ended for: " + username, "INFO");
+    return true;
+}
+

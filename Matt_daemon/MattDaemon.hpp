@@ -1,6 +1,7 @@
 #ifndef MATT_DAEMON_HPP
 #define MATT_DAEMON_HPP
 #include "Tintin_reporter.hpp"
+#include "utils/auth.hpp"
 #include <set>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -18,11 +19,16 @@
 #include <cstring>
 #include <algorithm>
 #include <sys/stat.h>
+#include "utils/remote_shell.hpp"
+#include "utils/email.hpp"
 
 class MattDaemon 
 {
     private:
         static MattDaemon*   instance;
+        bool                handleClientConnection(int clientSocket);
+        void                handleGraphicalClient(int clientSocket);
+        void                loadConfig();
         std::set<pid_t>      clients;
         Tintin_reporter      logger;
         int                  signalPipe[2];

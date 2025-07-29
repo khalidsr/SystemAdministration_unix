@@ -2,12 +2,15 @@ NAME =  MattDaemon
 
 CPP = c++
 
-CPPFLAGS = -Wall -Werror -Wextra
+CPPFLAGS = -Wall -Werror -Wextra -I. -Iutils
 
 SRC = main.cpp\
 		MattDaemon.cpp\
-		utils.cpp\
-		Tintin_reporter.cpp
+		Tintin_reporter.cpp\
+		./utils/auth.cpp\
+		./utils/remote_shell.cpp\
+		./utils/email.cpp\
+
 
 HEADERS = MattDaemon.hpp
 			
