@@ -7,7 +7,8 @@
 #include <QMessageBox>
 #include <QHostAddress>
 
-ClientWindow::ClientWindow(QWidget *parent) : QWidget(parent) {
+ClientWindow::ClientWindow(QWidget *parent) : QWidget(parent) 
+{
     setWindowTitle("MattDaemon Client");
     resize(400, 300);
 
@@ -55,7 +56,8 @@ void ClientWindow::sendToDaemon()
 
     QString message = user + ":" + pass + ":" + cmd;
     socket->connectToHost(QHostAddress::LocalHost, 4243);
-    if (!socket->waitForConnected(1000)) {
+    if (!socket->waitForConnected(1000)) 
+    {
         QMessageBox::critical(this, "Error", "Could not connect to daemon.");
         return;
     }
@@ -63,12 +65,14 @@ void ClientWindow::sendToDaemon()
     socket->write(message.toUtf8());
 }
 
-void ClientWindow::onReadyRead() {
+void ClientWindow::onReadyRead() 
+{
     QByteArray response = socket->readAll();
     responseBox->append("Daemon: " + QString::fromUtf8(response));
     socket->disconnectFromHost();
 }
 
-void ClientWindow::onError(QAbstractSocket::SocketError) {
+void ClientWindow::onError(QAbstractSocket::SocketError) 
+{
     responseBox->append("Socket error: " + socket->errorString());
 }

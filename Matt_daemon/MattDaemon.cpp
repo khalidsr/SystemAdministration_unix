@@ -209,7 +209,8 @@ int MattDaemon::listeningPort()
             }
 
             int clientSocket = accept(serverSocket, NULL, NULL);
-            if (clientSocket < 0) continue;
+            if (clientSocket < 0) 
+                continue;
 
             pid_t pid = fork();
             if (pid < 0) 
@@ -224,22 +225,21 @@ int MattDaemon::listeningPort()
                 close(shutdownPipe[0]);
                 logger.log("Client connected.", "INFO");
 
-                // Check if it's a graphical client (one-time command)
                 fd_set test_fds;
                 FD_ZERO(&test_fds);
                 FD_SET(clientSocket, &test_fds);
                 struct timeval tv;
-                tv.tv_sec = 1;  // 1 second timeout
+                tv.tv_sec = 1; 
                 tv.tv_usec = 0;
                 
                 int ready = select(clientSocket + 1, &test_fds, NULL, NULL, &tv);
-                if (ready > 0 && FD_ISSET(clientSocket, &test_fds)) {
-                    // Data already available - treat as graphical client
+                if (ready > 0 && FD_ISSET(clientSocket, &test_fds)) 
+                {
+                    
                     handleGraphicalClient(clientSocket);
                     exit(0);
                 }
-                
-                // // Otherwise, proceed with shell client
+  
                 if (!handleClientConnection(clientSocket)) 
                 {
                     exit(1);
@@ -249,16 +249,14 @@ int MattDaemon::listeningPort()
                 char buffer[1024];
                 ssize_t bytes_read;
                 
-                // Send welcome message
+             
                 std::string welcome = "MattDaemon Remote Shell - Type 'help' for commands\n";
                 write(clientSocket, welcome.c_str(), welcome.size());
                 
                 while (true) 
                 {
-                    // Send prompt
                     write(clientSocket, "$ ", 2);
-                    
-                    // Read command
+                 
                     bytes_read = read(clientSocket, buffer, sizeof(buffer)-1);
                     if (bytes_read <= 0) break;
                     
@@ -274,7 +272,8 @@ int MattDaemon::listeningPort()
                         break;
                     }
                     
-                    if (command == "help") {
+                    if (command == "help") 
+                    {
                         std::string help = "Available commands:\n"
                                         "  help    - Show this help\n"
                                         "  exit    - Exit shell\n"
@@ -284,7 +283,6 @@ int MattDaemon::listeningPort()
                         continue;
                     }
                     
-                    // Execute command using remote shell
                     std::string output = RemoteShell::execute(command);
                     write(clientSocket, output.c_str(), output.size());
                 }
@@ -311,7 +309,7 @@ int MattDaemon::run()
     if (config.is_open()) 
     {
         std::getline(config, token);
-        // Authenticator::setToken(token);
+
         Authenticator::loadUsers();
 
         std::string defaultUser = "admin";
@@ -423,12 +421,13 @@ void MattDaemon::handleGraphicalClient(int clientSocket)
 
 bool MattDaemon::handleClientConnection(int clientSocket) 
 {
-    const char* prompt = "AUTH: Enter username:password\n";
+    const char* prompt = "$Enter   << username : password >>\n";
     write(clientSocket, prompt, strlen(prompt));
 
     char buffer[1024];
     ssize_t bytes_read = read(clientSocket, buffer, sizeof(buffer) - 1);
-    if (bytes_read <= 0) {
+    if (bytes_read <= 0) 
+    {
         logger.log("No auth received from CLI client", "WARNING");
         return false;
     }
@@ -448,7 +447,8 @@ bool MattDaemon::handleClientConnection(int clientSocket)
     std::string password = message.substr(colon + 1);
     password.erase(password.find_last_not_of("\r\n") + 1);
 
-    if (!Authenticator::authenticate(username, password)) {
+    if (!Authenticator::authenticate(username, password)) 
+    {
         logger.log("Auth failed for CLI user: " + username, "WARNING");
         const char* fail = "AUTH_FAIL: Invalid credentials\n";
         write(clientSocket, fail, strlen(fail));
@@ -459,7 +459,8 @@ bool MattDaemon::handleClientConnection(int clientSocket)
     const char* welcome = "AUTH_OK\nMattDaemon Shell - type 'help' or 'exit'\n";
     write(clientSocket, welcome, strlen(welcome));
 
-    while (true) {
+    while (true) 
+    {
         write(clientSocket, "$ ", 2);
         bytes_read = read(clientSocket, buffer, sizeof(buffer) - 1);
         if (bytes_read <= 0) break;

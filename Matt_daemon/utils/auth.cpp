@@ -1,19 +1,20 @@
 #include "auth.hpp"
 #include <fstream>
 #include <sstream>
-#include "Tintin_reporter.hpp"
 
-Tintin_reporter logger;
+
+
+
 std::map<std::string, std::string> Authenticator::users;
 
 void Authenticator::loadUsers() 
 {
-
+    
     users["admin"] = "admin123";
     users["user1"] = "password1";
     users["user2"] = "password2";
     
-
+    
     std::ifstream file("users.cfg");
     if (file.is_open()) 
     {
@@ -39,9 +40,11 @@ bool Authenticator::authenticate(const std::string& username, const std::string&
     return it->second == password;
 }
 
-std::string Authenticator::getEmail(const std::string& username) {
+std::string Authenticator::getEmail(const std::string& username) 
+{
     auto it = users.find(username);
-    if (it != users.end()) {
+    if (it != users.end()) 
+    {
         return it->second;
     }
     return "";

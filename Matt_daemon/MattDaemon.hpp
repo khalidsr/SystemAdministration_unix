@@ -38,14 +38,14 @@ class MattDaemon
 
         MattDaemon();
         MattDaemon(const MattDaemon& other);
-        MattDaemon& operator=(const MattDaemon& other);
-        int create_server_socket(); 
+        MattDaemon&          operator=(const MattDaemon& other);
+        int                 create_server_socket(); 
 
-        static void signal_handler(int signum);
-        void        handle_signal(int signum);
-        int         create_lockfile();
-        int         listeningPort();
-        void        daemonize();
+        static void         signal_handler(int signum);
+        void                handle_signal(int signum);
+        int                 create_lockfile();
+        int                 listeningPort();
+        void                daemonize();
 
     public:
         ~MattDaemon();

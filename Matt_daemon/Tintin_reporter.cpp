@@ -45,7 +45,8 @@ Tintin_reporter::~Tintin_reporter()
     }
 }
 
-bool Tintin_reporter::shouldRotate() const {
+bool Tintin_reporter::shouldRotate() const 
+{
     std::ifstream in(logDir + logFileName, std::ifstream::ate | std::ifstream::binary);
     return in.tellg() >= static_cast<std::streamoff>(maxLogSize);
 }
@@ -64,9 +65,8 @@ void Tintin_reporter::rotateLogs()
 
     std::rename((logDir + logFileName).c_str(), backupName.str().c_str());
 
-    // Optional gzip compression
     std::string compressCmd = "gzip " + backupName.str();
     std::system(compressCmd.c_str());
 
-    logFile.open(logDir + logFileName, std::ios::trunc); // New fresh log
+    logFile.open(logDir + logFileName, std::ios::trunc);
 }
