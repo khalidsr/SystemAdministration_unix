@@ -235,21 +235,26 @@ int MattDaemon::listeningPort()
                 int ready = select(clientSocket + 1, &test_fds, NULL, NULL, &tv);
                 if (ready > 0 && FD_ISSET(clientSocket, &test_fds)) 
                 {
-                    
                     handleGraphicalClient(clientSocket);
                     exit(0);
                 }
-  
+            
+                // if (handleClientConnection(clientSocket)) 
+                // {
+                //     close(clientSocket);
+                //     exit(0);
+                // }
                 if (!handleClientConnection(clientSocket)) 
                 {
-                    exit(1);
+                    close(clientSocket);
+                    exit(0);
                 }
+
                 logger.log("Remote shell session started", "INFO");
 
                 char buffer[1024];
                 ssize_t bytes_read;
                 
-             
                 std::string welcome = "MattDaemon Remote Shell - Type 'help' for commands\n";
                 write(clientSocket, welcome.c_str(), welcome.size());
                 
@@ -258,7 +263,8 @@ int MattDaemon::listeningPort()
                     write(clientSocket, "$ ", 2);
                  
                     bytes_read = read(clientSocket, buffer, sizeof(buffer)-1);
-                    if (bytes_read <= 0) break;
+                    if (bytes_read <= 0) \
+                        break;
                     
                     buffer[bytes_read] = '\0';
                     std::string command = buffer;
@@ -458,30 +464,6 @@ bool MattDaemon::handleClientConnection(int clientSocket)
     logger.log("CLI client authenticated as: " + username, "INFO");
     const char* welcome = "AUTH_OK\nMattDaemon Shell - type 'help' or 'exit'\n";
     write(clientSocket, welcome, strlen(welcome));
-
-    while (true) 
-    {
-        write(clientSocket, "$ ", 2);
-        bytes_read = read(clientSocket, buffer, sizeof(buffer) - 1);
-        if (bytes_read <= 0) break;
-
-        buffer[bytes_read] = '\0';
-        std::string cmd(buffer);
-        cmd.erase(cmd.find_last_not_of("\r\n") + 1);
-
-        if (cmd == "exit" || cmd == "quit") break;
-        if (cmd == "help") {
-            std::string help = "Available commands:\nhelp - show this\nexit - close session\n";
-            write(clientSocket, help.c_str(), help.size());
-            continue;
-        }
-
-        std::string output = RemoteShell::execute(cmd);
-        if (output.empty()) output = "(no output)\n";
-        write(clientSocket, output.c_str(), output.size());
-    }
-
-    logger.log("CLI session ended for: " + username, "INFO");
+    
     return true;
 }
-
