@@ -55,7 +55,7 @@ void ClientWindow::sendToDaemon()
     }
 
     QString message = user + ":" + pass + ":" + cmd;
-    socket->connectToHost(QHostAddress::LocalHost, 4243);
+    socket->connectToHost(QHostAddress::LocalHost, 4242);
     if (!socket->waitForConnected(1000)) 
     {
         QMessageBox::critical(this, "Error", "Could not connect to daemon.");

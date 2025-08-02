@@ -23,13 +23,9 @@ MattDaemon::MattDaemon() : lock_fd(-1), serverSocket(-1)
 MattDaemon::~MattDaemon() 
 {
     if (lock_fd != -1) 
-    {
         close(lock_fd);
-    }
     if (serverSocket != -1) 
-    {
         close(serverSocket);
-    }
   
     if (signalPipe[0] != -1) 
         close(signalPipe[0]);
@@ -118,7 +114,7 @@ int MattDaemon::listeningPort()
     sockaddr_in serverAddress;
     memset(&serverAddress, 0, sizeof(serverAddress));
     serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(4243);
+    serverAddress.sin_port = htons(4242);
     serverAddress.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) 
@@ -136,7 +132,6 @@ int MattDaemon::listeningPort()
         serverSocket = -1;
         return -1;
     }
-
     logger.log("Server created.", "INFO");
     daemonize();
     while (true) 
@@ -158,7 +153,8 @@ int MattDaemon::listeningPort()
             read(signalPipe[0], &sig, 1);
             logger.log("Signal received. Quitting.", "INFO");
 
-            for (pid_t pid : clients) kill(pid, SIGKILL);
+            for (pid_t pid : clients) 
+                kill(pid, SIGKILL);
             while (!clients.empty()) 
             {
                 waitpid(*clients.begin(), NULL, 0);
@@ -177,7 +173,8 @@ int MattDaemon::listeningPort()
             read(shutdownPipe[0], &buf, 1);
             logger.log("Request quit.", "INFO");
 
-            for (pid_t pid : clients) kill(pid, SIGKILL);
+            for (pid_t pid : clients) 
+                kill(pid, SIGKILL);
             while (!clients.empty())
             {
                 waitpid(*clients.begin(), NULL, 0);
@@ -200,7 +197,7 @@ int MattDaemon::listeningPort()
                 else 
                     ++it;
             }
-
+            logger.log("+++++++++++++++++"+std::to_string(clients.size()), "I=========NFO");
             if (clients.size() >= 3) 
             {
                 logger.log("Max clients connected. Rejecting new connection.", "INFO");
@@ -239,11 +236,6 @@ int MattDaemon::listeningPort()
                     exit(0);
                 }
             
-                // if (handleClientConnection(clientSocket)) 
-                // {
-                //     close(clientSocket);
-                //     exit(0);
-                // }
                 if (!handleClientConnection(clientSocket)) 
                 {
                     close(clientSocket);
@@ -320,7 +312,7 @@ int MattDaemon::run()
 
         std::string defaultUser = "admin";
         std::string defaultEmail = Authenticator::getEmail(defaultUser);
-        EmailSender::configure("jamel@mechanicspedia.com");
+        EmailSender::configure("hanakhalid57@gmail.com");
 
         logger.log("Loaded authentication token and email for admin", "INFO");
     }
@@ -402,6 +394,8 @@ void MattDaemon::handleGraphicalClient(int clientSocket)
     std::string username = message.substr(0, first_colon);
     std::string password = message.substr(first_colon + 1, second_colon - first_colon - 1);
     std::string command = message.substr(second_colon + 1);
+    
+    logger.log(std::to_string(clients.size()),"====================WARNING");
     
     logger.log("Received from GUI client - User: " + username + ", Command: " + command, "INFO");
     if (!Authenticator::authenticate(username, password))

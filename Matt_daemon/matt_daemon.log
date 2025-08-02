@@ -1,24 +1,14 @@
-[01/08/2025-16:47:51] [ INFO ] - Matt_daemon: Loaded authentication token and email for admin
-[01/08/2025-16:47:51] [ INFO ] - Matt_daemon: Started.
-[01/08/2025-16:47:51] [ INFO ] - Matt_daemon: Creating server.
-[01/08/2025-16:47:51] [ INFO ] - Matt_daemon: Server created.
-[01/08/2025-16:47:51] [ INFO ] - Matt_daemon: Entering Daemon mode.
-[01/08/2025-16:47:51] [ INFO ] - Matt_daemon: Started. PID: 101964
-[01/08/2025-16:47:53] [ INFO ] - Matt_daemon: Client connected.
-[01/08/2025-16:47:54] [ WARNING ] - Matt_daemon: Invalid message format from graphical client
-[01/08/2025-16:50:12] [ INFO ] - Matt_daemon: Client connected.
-[01/08/2025-16:50:18] [ INFO ] - Matt_daemon: Client connected.
-[01/08/2025-16:50:23] [ INFO ] - Matt_daemon: Client connected.
-[01/08/2025-16:50:24] [ WARNING ] - Matt_daemon: Invalid message format from graphical client
-[01/08/2025-16:50:33] [ INFO ] - Matt_daemon: Client connected.
-[01/08/2025-16:51:12] [ INFO ] - Matt_daemon: Client connected.
-[01/08/2025-16:51:17] [ INFO ] - Matt_daemon: CLI client authenticated as: admin
-[01/08/2025-16:51:17] [ INFO ] - Matt_daemon: Remote shell session started
-[01/08/2025-16:51:24] [ LOG ] - Matt_daemon: Command: ps
-[01/08/2025-16:51:25] [ LOG ] - Matt_daemon: Command: clear
-[01/08/2025-16:51:26] [ LOG ] - Matt_daemon: Command: ls
-[01/08/2025-16:51:28] [ LOG ] - Matt_daemon: Command: clear
-[01/08/2025-16:51:32] [ LOG ] - Matt_daemon: Command: quit
-[01/08/2025-16:51:32] [ INFO ] - Matt_daemon: Remote shell session ended
-[01/08/2025-16:51:32] [ INFO ] - Matt_daemon: Request quit.
-[01/08/2025-16:51:32] [ Info ] - Matt_daemon: Quitting.
+[02/08/2025-18:53:59] [ INFO ] - Matt_daemon: Started.
+[02/08/2025-18:53:59] [ INFO ] - Matt_daemon: Creating server.
+[02/08/2025-18:53:59] [ ERROR ] - Matt_daemon: Failed to bind socket.
+[02/08/2025-18:53:59] [ Info ] - Matt_daemon: Quitting.
+[02/08/2025-18:54:58] [ INFO ] - Matt_daemon: Loaded authentication token and email for admin
+[02/08/2025-18:54:58] [ INFO ] - Matt_daemon: Started.
+[02/08/2025-18:54:58] [ INFO ] - Matt_daemon: Creating server.
+[02/08/2025-18:54:58] [ ERROR ] - Matt_daemon: Failed to bind socket.
+[02/08/2025-18:54:58] [ Info ] - Matt_daemon: Quitting.
+[02/08/2025-18:55:48] [ INFO ] - Matt_daemon: Loaded authentication token and email for admin
+[02/08/2025-18:55:48] [ INFO ] - Matt_daemon: Started.
+[02/08/2025-18:55:48] [ INFO ] - Matt_daemon: Creating server.
+[02/08/2025-18:55:48] [ ERROR ] - Matt_daemon: Failed to bind socket.
+[02/08/2025-18:55:49] [ Info ] - Matt_daemon: Quitting.

@@ -26,9 +26,7 @@ void EmailSender::send(const std::string& subject, const std::string& body)
 {
     std::string cmd =
         "echo \"" + body + "\" | mail -s \"" + subject + "\" \"" + recipient + "\"";
-    std::cout<<"=========="<<cmd<<std::endl;
     int ret = system(cmd.c_str());
-
     if (ret != 0)
         std::cerr << "Failed to send email\n";
 }
