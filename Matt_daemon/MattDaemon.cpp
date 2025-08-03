@@ -13,6 +13,7 @@ MattDaemon* MattDaemon::getInstance()
 
 MattDaemon::MattDaemon() : lock_fd(-1), serverSocket(-1) 
 {
+    activeClients = 0;
     signalPipe[0] = -1; 
     signalPipe[1] = -1;
     shutdownPipe[0] = -1; 
@@ -198,7 +199,7 @@ int MattDaemon::listeningPort()
                     ++it;
             }
             logger.log("+++++++++++++++++"+std::to_string(clients.size()), "I=========NFO");
-            if (clients.size() >= 3) 
+            if (activeClients >= 3)
             {
                 logger.log("Max clients connected. Rejecting new connection.", "INFO");
                 sleep(1);
@@ -208,7 +209,7 @@ int MattDaemon::listeningPort()
             int clientSocket = accept(serverSocket, NULL, NULL);
             if (clientSocket < 0) 
                 continue;
-
+            activeClients++;
             pid_t pid = fork();
             if (pid < 0) 
             {
@@ -238,6 +239,7 @@ int MattDaemon::listeningPort()
             
                 if (!handleClientConnection(clientSocket)) 
                 {
+                    activeClients--;
                     close(clientSocket);
                     exit(0);
                 }
@@ -395,17 +397,15 @@ void MattDaemon::handleGraphicalClient(int clientSocket)
     std::string password = message.substr(first_colon + 1, second_colon - first_colon - 1);
     std::string command = message.substr(second_colon + 1);
     
-    logger.log(std::to_string(clients.size()),"====================WARNING");
     
     logger.log("Received from GUI client - User: " + username + ", Command: " + command, "INFO");
     if (!Authenticator::authenticate(username, password))
     {
- 
         logger.log("Authentication failed for user: " + username, "WARNING");
         const char* response = "AUTH_FAIL: Invalid credentials";
         write(clientSocket, response, strlen(response));
         close(clientSocket);
-        return;
+        return ;
     }
     
     std::string output = RemoteShell::execute(command);
@@ -416,6 +416,7 @@ void MattDaemon::handleGraphicalClient(int clientSocket)
     
     write(clientSocket, output.c_str(), output.size());
     logger.log("Sent response to GUI client", "INFO");
+    activeClients--;
     close(clientSocket);
 }
 

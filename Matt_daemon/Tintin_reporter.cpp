@@ -2,9 +2,9 @@
 
 Tintin_reporter::Tintin_reporter() 
 {
-    // system("mkdir -p /var/log/matt_daemon");
-      logFile.open("matt_daemon.log", std::ios::app);
-    // logFile.open("/var/log/matt_daemon/matt_daemon.log", std::ios::app);
+    //   logFile.open("matt_daemon.log", std::ios::app);
+    system("mkdir -p /var/log/matt_daemon");
+    logFile.open("/var/log/matt_daemon/matt_daemon.log", std::ios::app);
     if (!logFile) 
     {
         std::cerr << "Failed to open log file.\n";

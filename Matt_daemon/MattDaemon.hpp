@@ -21,6 +21,7 @@
 #include <sys/stat.h>
 #include "utils/remote_shell.hpp"
 #include "utils/email.hpp"
+#include <atomic>
 
 class MattDaemon 
 {
@@ -35,11 +36,16 @@ class MattDaemon
         int                  shutdownPipe[2];
         int                  lock_fd;
         int                  serverSocket;
+        std::set<pid_t>      shellClients;
+        std::set<pid_t>      guiClients;
+        std::atomic<int>    activeClients;
+
 
         MattDaemon();
         MattDaemon(const MattDaemon& other);
         MattDaemon&          operator=(const MattDaemon& other);
-        int                 create_server_socket(); 
+        int                 create_server_socket();
+        void                runShellSession(int clientSocket);
 
         static void         signal_handler(int signum);
         void                handle_signal(int signum);
