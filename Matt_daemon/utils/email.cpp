@@ -14,9 +14,12 @@ bool EmailSender::shouldSend(const std::string& type)
     return type == "ERROR" || type == "WARNING";
 }
 
-void EmailSender::sendIfNeeded(const std::string& type, const std::string& msg) {
-    if (recipient.empty()) return;
-    if (!shouldSend(type)) return;
+void EmailSender::sendIfNeeded(const std::string& type, const std::string& msg) 
+{
+    if (recipient.empty()) 
+        return;
+    if (!shouldSend(type)) 
+        return;
 
     std::string subject = "[MattDaemon] " + type + " Alert";
     send(subject, msg);

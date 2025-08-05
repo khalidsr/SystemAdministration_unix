@@ -15,7 +15,7 @@ void Authenticator::loadUsers()
     users["user2"] = "password2";
     
     
-    std::ifstream file("users.cfg");
+    std::ifstream file("matt_daemon.cfg");
     if (file.is_open()) 
     {
         std::string line;

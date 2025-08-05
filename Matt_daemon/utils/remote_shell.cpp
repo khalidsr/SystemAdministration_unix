@@ -10,7 +10,7 @@
 const char* ALLOWED_COMMANDS[] = 
 {
     "ls", "pwd", "whoami", "date", "uname", "df", "ps",
-    "cat", "grep", "wc","history","id","clear", nullptr  
+    "cat", "grep", "wc","history","id","clear","wich","env", nullptr  
 };
 
 bool RemoteShell::isAllowed(const std::string& command) 

@@ -198,7 +198,7 @@ int MattDaemon::listeningPort()
                 else 
                     ++it;
             }
-            logger.log("+++++++++++++++++"+std::to_string(clients.size()), "I=========NFO");
+
             if (activeClients >= 3)
             {
                 logger.log("Max clients connected. Rejecting new connection.", "INFO");
@@ -218,7 +218,7 @@ int MattDaemon::listeningPort()
             }
 
             if (pid == 0) 
-            { 
+            {
                 close(serverSocket);
                 close(shutdownPipe[0]);
                 logger.log("Client connected.", "INFO");
@@ -257,7 +257,7 @@ int MattDaemon::listeningPort()
                     write(clientSocket, "$ ", 2);
                  
                     bytes_read = read(clientSocket, buffer, sizeof(buffer)-1);
-                    if (bytes_read <= 0) \
+                    if (bytes_read <= 0)
                         break;
                     
                     buffer[bytes_read] = '\0';
@@ -278,7 +278,8 @@ int MattDaemon::listeningPort()
                                         "  help    - Show this help\n"
                                         "  exit    - Exit shell\n"
                                         "  quit    - Quit server\n"
-                                        "  [any system command from allow list]\n";
+                                        "  allowed commands :[ls, pwd, whoami, date, uname, df, ps," \
+                                        "cat, grep, wc, history, id, clear, wich, env ] \n";
                         write(clientSocket, help.c_str(), help.size());
                         continue;
                     }
@@ -315,7 +316,6 @@ int MattDaemon::run()
         std::string defaultUser = "admin";
         std::string defaultEmail = Authenticator::getEmail(defaultUser);
         EmailSender::configure("hanakhalid57@gmail.com");
-
         logger.log("Loaded authentication token and email for admin", "INFO");
     }
 

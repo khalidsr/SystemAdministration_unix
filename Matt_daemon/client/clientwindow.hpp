@@ -8,7 +8,8 @@ class QLineEdit;
 class QTextEdit;
 class QPushButton;
 
-class ClientWindow : public QWidget {
+class ClientWindow : public QWidget 
+{
     Q_OBJECT
 
 public:

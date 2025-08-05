@@ -12,11 +12,6 @@ Tintin_reporter::Tintin_reporter()
     }
 }
 
-bool Tintin_reporter::isOperational() const 
-{
-    return logFile.is_open() && logFile.good();
-}
-
 void Tintin_reporter::log(const std::string &msg, const std::string &type_msg) 
 {
     if (shouldRotate()) 
@@ -45,7 +40,7 @@ Tintin_reporter::~Tintin_reporter()
     }
 }
 
-bool Tintin_reporter::shouldRotate() const 
+bool Tintin_reporter::shouldRotate()
 {
     std::ifstream in(logDir + logFileName, std::ifstream::ate | std::ifstream::binary);
     return in.tellg() >= static_cast<std::streamoff>(maxLogSize);
