@@ -164,7 +164,7 @@ bool keyboard_has_input(void)
 }
 
 
-void main(void)
+int main(void)
 {
     char *vidptr = (char*) VGA_ADDRESS;
     char c = 0;
@@ -246,4 +246,5 @@ void main(void)
  while(1) {
         __asm__("hlt");
     }
+return 0;
 }

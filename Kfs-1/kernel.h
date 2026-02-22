@@ -2,9 +2,25 @@
 #define KERNEL_H
 
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdarg.h>
+
+
+typedef int bool;
+#define true  1
+#define false 0
+
+typedef unsigned char       uint8_t;
+typedef unsigned short      uint16_t;
+typedef unsigned int        uint32_t;
+typedef unsigned long long  uint64_t;
+typedef signed char         int8_t;
+typedef signed short        int16_t;
+typedef signed int          int32_t;
+typedef signed long long    int64_t;
+
+typedef __builtin_va_list va_list;
+#define va_start(v, l)  __builtin_va_start(v, l)
+#define va_arg(v, l)    __builtin_va_arg(v, l)
+#define va_end(v)       __builtin_va_end(v)
 
 #define VGA_ADDRESS 0xB8000
 #define VGA_WIDTH 80
