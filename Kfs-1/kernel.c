@@ -203,7 +203,6 @@ int main(void)
     while (1) 
     {
         uint8_t scancode = keyboard_get_scancode();
-        
        
         if (scancode == 0x2A || scancode == 0x36)  // Handle shift keys
         {
